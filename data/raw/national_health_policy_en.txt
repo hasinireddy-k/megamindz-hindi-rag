@@ -1,0 +1,23 @@
+﻿# National Health Policy and Ayushman Bharat PM-JAY Overview
+
+## 1. Executive Summary and Policy Objective
+The National Health Policy aims to attain the highest possible level of health and well-being for all at all ages, through a preventive and promotive healthcare orientation in all developmental policies, and universal access to good quality healthcare services without anyone facing financial hardship. A flagship pillar of this framework is the Ayushman Bharat - Pradhan Mantri Jan Arogya Yojana (AB PM-JAY).
+
+## 2. Financial Coverage and Eligibility Criteria
+Ayushman Bharat PM-JAY provides financial protection to vulnerable families against catastrophic health expenditures:
+- Financial Coverage: AB PM-JAY provides a health cover of Rs. 5,00,000 (Five Lakh Rupees) per family per year for secondary and tertiary care hospitalization.
+- Cashless and Paperless Access: Services are provided completely cashless and paperless at the point of care across all empanelled public and private hospitals nationwide.
+- Target Beneficiaries: The scheme covers over 12 crore poor, deprived rural families and identified occupational categories of urban workers' families, corresponding to the bottom 40 percent of the Indian population based on Socio-Economic Caste Census (SECC) 2011 data.
+- Family Size and Age Cap: There is no restriction on family size, age, or gender. All pre-existing medical conditions are covered from day one of enrolment.
+
+## 3. Nationwide Portability and Service Delivery
+PM-JAY is fully portable across the country:
+- A beneficiary registered in one state can receive cashless inpatient treatment in any empanelled hospital across any other state or union territory in India.
+- The scheme covers up to 3 days of pre-hospitalization and 15 days of post-hospitalization expenses, including diagnostic tests, consultations, and prescribed medicines.
+- More than 1,949 procedures and medical packages are covered across clinical specialties, including cardiology, oncology, neurosurgery, orthopaedics, and intensive care.
+
+## 4. Hospital Empanelment and Quality Standards
+To provide secondary and tertiary care, hospitals must meet strict empanelment criteria:
+- Empanelled Healthcare Providers (EHCPs) include both public district hospitals and qualified private hospitals.
+- Facilities must maintain minimum bed strengths (typically 10 to 25 beds depending on geography), round-the-clock nursing care, qualified medical officers, emergency resuscitation capabilities, and documented infection control protocols.
+- Tertiary institutions providing specialized surgeries must possess dedicated intensive care units (ICUs) and diagnostic laboratories accredited by national quality standards.

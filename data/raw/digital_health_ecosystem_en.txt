@@ -1,0 +1,16 @@
+﻿# Ayushman Bharat Digital Mission (ABDM) and Digital Health Ecosystem
+
+## 1. Mission Objectives and Architecture
+The Ayushman Bharat Digital Mission (ABDM), spearheaded by the National Health Authority (NHA), aims to create a seamless, interoperable digital healthcare ecosystem for India. The objective is to bridge the existing digital divide among different stakeholders of the healthcare system and establish a robust digital backbone that connects patients, healthcare professionals, laboratories, and hospitals.
+
+## 2. Core Building Blocks of ABDM
+The digital health architecture rests upon four foundational digital public goods:
+1. ABHA (Ayushman Bharat Health Account): A unique 14-digit identification number that enables individuals to identify, authenticate, and link their electronic health records across multiple healthcare providers nationwide.
+2. Healthcare Professionals Registry (HPR): A verified central repository of all registered medical practitioners, modern medicine doctors, dentists, nurses, and AYUSH practitioners.
+3. Health Facility Registry (HFR): A comprehensive registry of both public and private healthcare facilities across the country, spanning clinics, diagnostic labs, pharmacies, and multi-specialty hospitals.
+4. Unified Health Interface (UHI): An open network protocol enabling interoperable digital health service delivery, allowing citizens to discover doctors, book appointments, and receive tele-consultations across various consumer-facing applications.
+
+## 3. Longitudinal Electronic Health Records and Consent Management
+- ABDM implements a federated health data architecture: medical data is not stored in a centralized government database, but remains at the point of creation (hospital, lab, or clinic).
+- Patient Consent Framework: Data is shared securely across providers only after the explicit electronic consent of the patient via an electronic Consent Manager mechanism.
+- Continuity of Care: Allows doctors to access comprehensive medical histories, pathology reports, and discharge summaries with patient authorization, drastically reducing duplicate diagnostic testing and medical errors.

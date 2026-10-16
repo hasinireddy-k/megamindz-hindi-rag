@@ -1,0 +1,14 @@
+# Core Multilingual RAG Dependencies
+chromadb>=0.4.22
+sentence-transformers>=2.2.2
+torch>=2.0.0
+numpy>=1.24.0,<2.0.0
+python-dotenv>=1.0.0
+tabulate>=0.9.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+PyMuPDF>=1.23.0
+
+# Optional hosted generation; extractive answers work without an API key.
+google-generativeai>=0.8.0

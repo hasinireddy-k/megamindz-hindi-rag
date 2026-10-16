@@ -1,0 +1,20 @@
+﻿# Rural Healthcare Mission and Preventive Checkup Guidelines
+# ग्रामीण स्वास्थ्य मिशन एवं निवारक जांच दिशा-निर्देश
+
+## 1. Primary Health Centres and Rural Infrastructure
+ग्रामीण स्वास्थ्य संरचना के अंतर्गत प्राथमिक स्वास्थ्य केंद्र (PHC) और आयुष्मान आरोग्य मंदिर (पूर्व में उप-स्वास्थ्य केंद्र / Health & Wellness Centres) जमीनी स्तर पर प्राथमिक निवारक सेवाएं प्रदान करते हैं।
+- Sub-Centres and Health Wellness Centres cater to a population of 3,000 to 5,000 in hilly/tribal areas and 5,000 in plain areas.
+- Primary Health Centres (PHCs) act as the first referral unit for 20,000 to 30,000 individuals, offering essential outpatient consultations, basic maternal and child health, and routine laboratory diagnostics.
+
+## 2. Preventive Health Checkup Guidelines (निवारक स्वास्थ्य जांच)
+Preventive healthcare guidelines according to the rural healthcare initiative mandate continuous community screening:
+- Non-Communicable Diseases (NCD) Screening: Regular annual health checkups for adults aged 30 and above for hypertension (high blood pressure), diabetes (blood glucose), and common cancers (oral, breast, and cervical cancers).
+- Tele-consultation Services: e-Sanjeevani tele-medicine platform links frontline Community Health Officers (CHOs) at rural health centres with specialist doctors at medical colleges.
+- Mother and Child Care: Universal immunization tracking, antenatal checkups (ANC), iron-folic acid supplementation, and nutrition counselling under Poshan Abhiyaan.
+- Free Essential Drugs: Supply of essential generic medicines and diagnostic test strips at zero cost to rural patients.
+
+## 3. Comparison Between Primary Care and Secondary/Tertiary Facilities
+प्राथमिक स्वास्थ्य केंद्र और माध्यमिक/तृतीयक अस्पतालों के नियमों में स्पष्ट अंतर है:
+- Primary Health Centres (PHCs) focus on outpatient preventive and promotive care, day-care minor procedures, routine diagnostics, and community health management without financial caps because consultations and basic drugs are entirely free by default.
+- Secondary and Tertiary Facilities (CHC, District Hospitals, Medical Colleges): Cater to complicated surgeries, advanced intensive care (ICU), inpatient stays, and specialized medical packages under PM-JAY up to the annual family limit of Rs. 5,00,000.
+- Hospital Empanelment Differences: Primary centres are directly state-administered public clinics, whereas secondary/tertiary empanelment under PM-JAY requires strict criteria including continuous inpatient bed capacity, biometric authentication terminals, round-the-clock emergency support, and specialized medical specialists.

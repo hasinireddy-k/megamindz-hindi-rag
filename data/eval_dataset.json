@@ -1,0 +1,56 @@
+[
+  {
+    "id": "query_01",
+    "query": "Which institution did Kalam attend to study aeronautical engineering?",
+    "language": "en",
+    "query_type": "cross_lingual_en_to_hi",
+    "expected_pages": [6],
+    "target_page": 6,
+    "key_phrases": ["मद्रास", "इंस्टीट्यूट", "एमआईटी", "MIT", "वैमानिकी", "एरोनॉटिकल", "इंजीनियरिंग"]
+  },
+  {
+    "id": "query_02",
+    "query": "SLV-III ने किस उपग्रह को कक्षा में स्थापित किया था और यह सफलता कब मिली?",
+    "language": "hi",
+    "query_type": "monolingual_hi",
+    "expected_pages": [8],
+    "target_page": 8,
+    "key_phrases": ["रोहिणी", "Rohini", "1980", "जुलाई 1980"]
+  },
+  {
+    "id": "query_03",
+    "query": "कलाम ने हिंदुस्तान एयरोनॉटिक्स लिमिटेड में किस प्रकार के प्रोटोटाइप पर काम किया?",
+    "language": "hi",
+    "query_type": "monolingual_hi",
+    "expected_pages": [7],
+    "target_page": 7,
+    "key_phrases": ["होवरक्राफ्ट", "प्रोटोटाइप"]
+  },
+  {
+    "id": "query_04",
+    "query": "What were the five missile projects initiated under the Integrated Guided Missile Development Programme (IGMDP)?",
+    "language": "en",
+    "query_type": "cross_lingual_en_to_hi",
+    "expected_pages": [9],
+    "target_page": 9,
+    "key_phrases": ["पृथ्वी", "अग्नि", "त्रिशूल", "आकाश", "नाग"]
+  },
+  {
+    "id": "query_05",
+    "query": "1979 में SLV-3 के प्रथम प्रक्षेपण की विफलता के समय प्रोफेसर सतीश धवन ने कलाम का मार्गदर्शन कैसे किया?",
+    "language": "hi",
+    "query_type": "monolingual_hi",
+    "expected_pages": [8, 13],
+    "target_page": 8,
+    "key_phrases": ["सतीश धवन", "धवन", "ज़िम्मेदारी", "जिम्मेदारी", "विफलता", "नेतृत्व"]
+  },
+  {
+    "id": "query_06",
+    "query": "चंद्रयान-3 मिशन के विक्रम लैंडर ने चंद्रमा के दक्षिणी ध्रुव पर कब सॉफ्ट लैंडिंग की?",
+    "language": "hi",
+    "query_type": "out_of_domain_negative",
+    "expected_pages": [],
+    "target_page": null,
+    "key_phrases": []
+  }
+]
