@@ -6,8 +6,11 @@ rich metadata tagging, collection re-indexing, and transparent query retrieval.
 """
 
 import os
-import shutil
+import re
 from typing import List, Dict, Any, Optional
+from pathlib import Path
+
+import numpy as np
 
 try:
     import chromadb
@@ -17,6 +20,122 @@ except ImportError:
     HAS_CHROMADB = False
 
 from src.embeddings import MultilingualEmbeddingFunction
+from src.chunker import MultilingualChunker
+from src.normalizer import normalize_text
+
+
+class ReadOnlyVectorStore:
+    """In-memory semantic index built from repository text files for Vercel."""
+
+    PRIMARY_SOURCE = "Agni_Ki_Udaan_Adhyayan_Sahayika_Hindi.pdf"
+    PAGE_HEADING = re.compile(r"^##\s+पृष्ठ\s+(\d+)\s*:\s*(.*)$", re.MULTILINE)
+
+    def __init__(
+        self,
+        project_root: str,
+        collection_name: Optional[str] = None,
+        embedding_fn: Optional[MultilingualEmbeddingFunction] = None,
+    ):
+        self.project_root = Path(project_root)
+        self.collection_name = collection_name or os.getenv("CHROMA_COLLECTION_NAME", "multilingual_rag")
+        self.embedding_fn = embedding_fn or MultilingualEmbeddingFunction()
+        self.chunker = MultilingualChunker(
+            chunk_size=int(os.getenv("CHUNK_SIZE", "500")),
+            chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "100")),
+        )
+        self._chunks = self._load_chunks()
+        self._embeddings = None
+
+    def _load_chunks(self) -> List[Dict[str, Any]]:
+        raw_dir = self.project_root / "data" / "raw"
+        primary_path = raw_dir / "agni_ki_udaan_hi.txt"
+        if not primary_path.is_file():
+            raise FileNotFoundError(
+                "Vercel's read-only index source is missing: data/raw/agni_ki_udaan_hi.txt"
+            )
+
+        primary_text = primary_path.read_text(encoding="utf-8-sig")
+        headings = list(self.PAGE_HEADING.finditer(primary_text))
+        if not headings:
+            raise ValueError(
+                "The Hindi source text has no '## पृष्ठ N: heading' markers; cannot preserve page citations."
+            )
+
+        chunks: List[Dict[str, Any]] = []
+        for index, heading in enumerate(headings):
+            page = int(heading.group(1))
+            end = headings[index + 1].start() if index + 1 < len(headings) else len(primary_text)
+            content = normalize_text(primary_text[heading.end():end], preserve_newlines=True)
+            if content:
+                chunks.extend(self.chunker.chunk_document(
+                    content,
+                    source=f"Agni_Ki_Udaan_p{page:02d}",
+                    doc_metadata={
+                        "source": self.PRIMARY_SOURCE,
+                        "page": str(page),
+                        "section": heading.group(2).strip() or f"Page {page}",
+                    },
+                ))
+
+        for text_path in sorted(raw_dir.glob("*.txt")):
+            if text_path.name.casefold() == primary_path.name.casefold():
+                continue
+            content = normalize_text(text_path.read_text(encoding="utf-8-sig"), preserve_newlines=True)
+            if content:
+                chunks.extend(self.chunker.chunk_document(
+                    content,
+                    source=text_path.name,
+                    doc_metadata={"source": text_path.name, "page": "1", "section": "General"},
+                ))
+
+        if not chunks:
+            raise ValueError("No searchable text was found in data/raw.")
+        return chunks
+
+    def _ensure_embeddings(self) -> None:
+        if self._embeddings is None:
+            vectors = self.embedding_fn.embed_documents([chunk["text"] for chunk in self._chunks])
+            self._embeddings = np.asarray(vectors, dtype=np.float32)
+
+    def query(self, query_text: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        if top_k <= 0 or not self._chunks:
+            return []
+        self._ensure_embeddings()
+        query_vector = np.asarray(self.embedding_fn.embed_query(query_text), dtype=np.float32)
+        similarities = self._embeddings @ query_vector
+        best_indices = np.argsort(similarities)[::-1][:top_k]
+
+        results = []
+        for rank, index in enumerate(best_indices, start=1):
+            chunk = self._chunks[int(index)]
+            metadata = {key: value for key, value in chunk.items() if key not in {
+                "chunk_id", "text", "chunk_index", "start_char", "end_char", "char_length", "token_estimate"
+            }}
+            similarity = float(np.clip(similarities[index], 0.0, 1.0))
+            results.append({
+                "rank": rank,
+                "chunk_id": chunk["chunk_id"],
+                "text": chunk["text"],
+                "source": metadata.get("source", "unknown"),
+                "chunk_index": chunk.get("chunk_index", 0),
+                "distance": round(1.0 - similarity, 4),
+                "similarity_score": round(similarity, 4),
+                "metadata": metadata,
+            })
+        return results
+
+    def count(self) -> int:
+        return len(self._chunks)
+
+    def get_metadatas(self) -> List[Dict[str, Any]]:
+        fields = {"source", "page", "section", "chunk_index", "start_char", "end_char", "char_length", "token_estimate"}
+        return [{key: value for key, value in chunk.items() if key in fields} for chunk in self._chunks]
+
+    def reset_collection(self) -> None:
+        raise RuntimeError("The Vercel index is read-only. Update data/raw and redeploy to change documents.")
+
+    def add_chunks(self, chunks: List[Dict[str, Any]], batch_size: int = 64) -> None:
+        raise RuntimeError("The Vercel index is read-only. Update data/raw and redeploy to change documents.")
 
 
 class ChromaVectorStore:
@@ -32,7 +151,7 @@ class ChromaVectorStore:
     ):
         if not HAS_CHROMADB:
             raise ImportError(
-                "chromadb is not installed. Please run: pip install chromadb"
+                "chromadb is not installed. Please run: pip install -r requirements-local.txt"
             )
 
         self.persist_dir = persist_dir or os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
@@ -143,3 +262,8 @@ class ChromaVectorStore:
     def count(self) -> int:
         """Returns the number of indexed chunks."""
         return self.collection.count()
+
+    def get_metadatas(self) -> List[Dict[str, Any]]:
+        """Returns metadata for all chunks without exposing Chroma internals to the API."""
+        stored = self.collection.get(include=["metadatas"])
+        return stored.get("metadatas") or []

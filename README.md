@@ -1,17 +1,17 @@
 # IndicRAG: Hindi PDF Question Answering
 
-MegaMindz Hindi RAG Assignment (IndicRAG) extracts text from the supplied 22-page Hindi PDF, normalizes it, chunks each page with page and heading metadata, embeds Hindi and English with a multilingual Sentence Transformers model, and stores vectors locally in ChromaDB. Answers use retrieved text and include page, section, and chunk citations. The default answer mode is deterministic and extractive; Gemini generation is optional.
+MegaMindz Hindi RAG Assignment (IndicRAG) chunks Hindi and English source text, embeds it with a multilingual model, and returns retrieved passages with page, section, and chunk citations. Local development uses persistent ChromaDB and can ingest the supplied PDF. Vercel uses a small CPU-only runtime and a read-only in-memory index built from the text files tracked in `data/raw`; document updates take effect on redeploy. The default answer mode is deterministic and extractive; Gemini generation is optional locally.
 
 The ingestion pipeline also indexes the supplemental `.txt` files in `data/raw`, except `agni_ki_udaan_hi.txt` because that file is a separate text surrogate for the PDF. Evaluation targets and citations refer to the actual PDF pages.
 
 ## Requirements
 
 - Windows 10 or 11
-- Python 3.9 or newer (Python 3.10 or 3.11 is recommended for a fresh installation)
+- Python 3.10 or newer (Python 3.12 is used for Vercel deployments)
 - Internet access for installing packages and downloading the embedding model on first use
 - The supplied `Agni_Ki_Udaan_Adhyayan_Sahayika_Hindi.pdf` in the project root, or in `data/raw`
 
-The first embedding run downloads `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` from Hugging Face. No hosted generation API is required for the default mode.
+The first embedding run downloads the ONNX version of `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. No hosted generation API is required for the default mode.
 
 ## Install on Windows
 
@@ -21,13 +21,13 @@ Open PowerShell in the project directory:
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-local.txt
 $env:PYTHONUTF8 = "1"
 ```
 
 If PowerShell blocks environment activation, either allow activation for the current process with `Set-ExecutionPolicy -Scope Process Bypass`, or run the commands directly with `.\.venv\Scripts\python.exe` instead of activating the environment.
 
-To use the optional Gemini answer mode, copy `.env.example` to `.env`, set `GEMINI_API_KEY`, and keep the key private. The Gemini package is installed by `requirements.txt`; without a key, the local extractive generator is used.
+To use the optional Gemini answer mode, copy `.env.example` to `.env`, set `GEMINI_API_KEY`, and keep the key private. The Gemini package is installed by `requirements-local.txt`; without a key, the local extractive generator is used.
 
 ## Ingest the PDF
 
@@ -76,7 +76,13 @@ The test set and expected evidence are in `data/eval_dataset.json`. In the curre
 python run.py serve --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000/`. FastAPI documentation is available at `http://127.0.0.1:8000/docs`. The API provides `POST /api/ask`, `POST /api/ingest`, `GET /api/evaluate`, and `GET /api/stats`. Ask and evaluate return HTTP 409 with an ingestion instruction when the index is empty; `/api/ask` accepts `top_k` from 1 through 20.
+Open `http://127.0.0.1:8000/`. FastAPI documentation is available at `http://127.0.0.1:8000/docs`. The API provides `POST /api/ask`, `POST /api/ingest`, `GET /api/evaluate`, and `GET /api/stats`. `/api/ingest` is for local use; `/api/ask` accepts `top_k` from 1 through 20.
+
+## Deploy to Vercel
+
+Import this GitHub repository as a Vercel project and deploy it with the repository root as the project root. Keep the Python version at 3.12 and let Vercel install `requirements.txt`; do not use the local `requirements-local.txt` file as the deployment install list. `vercel.json` sets the Python function timeout to 60 seconds.
+
+The Vercel service reads the Hindi page transcript and supplemental `.txt` files from `data/raw`, then creates a read-only in-memory index. The PDF itself is intentionally not required or included in GitHub. The first question after a cold start downloads the compact ONNX model into `/tmp` and embeds the source chunks. `/api/ingest` returns HTTP 405 on Vercel; to update documents, commit the changed text files and redeploy.
 
 ## Test Queries and Expected Evidence
 
@@ -99,7 +105,7 @@ Copy `.env.example` to `.env` to override the defaults:
 
 - `CHROMA_PERSIST_DIRECTORY`: local Chroma database path
 - `CHROMA_COLLECTION_NAME`: collection name
-- `EMBEDDING_MODEL_NAME`: Sentence Transformers model
+- `EMBEDDING_MODEL_NAME`: FastEmbed model (default: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`)
 - `CHUNK_SIZE` and `CHUNK_OVERLAP`: chunker character limits
 - `CONFIDENCE_THRESHOLD`: minimum cosine similarity used for confidence gating
 - `GEMINI_API_KEY`: optional hosted generation key
@@ -109,8 +115,8 @@ The vector database, virtual environments, `.env` files, Python caches, and whee
 ## Troubleshooting and Limitations
 
 - `ChromaDB is empty`: run `python run.py ingest` from the project directory and confirm the supplied PDF path.
-- `PyMuPDF is not installed`: activate `.venv` and run `python -m pip install -r requirements.txt`.
-- First query is slow or fails while loading the model: confirm internet access, then retry after the Hugging Face model download completes.
+- `PyMuPDF is not installed`: activate `.venv` and run `python -m pip install -r requirements-local.txt`.
+- First query is slow or fails while loading the model: confirm internet access, then retry after the ONNX model download completes. Vercel stores this temporary model under `/tmp` for the current function instance.
 - Hindi text looks garbled in PowerShell: set `$env:PYTHONUTF8 = "1"` for the current terminal and run the CLI again.
 - `No searchable text was extracted`: the current pipeline uses PDF text extraction only; it does not perform OCR.
 - Similarity thresholds are heuristic and are not calibrated probabilities. Always inspect the returned retrieval trace and citations.

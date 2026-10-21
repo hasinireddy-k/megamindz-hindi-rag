@@ -61,7 +61,7 @@ async def api_ask(req: QueryRequest):
         raise HTTPException(status_code=400, detail="Please enter a question.")
     pipeline = get_pipeline()
     if pipeline.vector_store.count() == 0:
-        raise HTTPException(status_code=409, detail="ChromaDB is empty. Run `python run.py ingest` first.")
+        raise HTTPException(status_code=409, detail="The search index is empty. Ingest the source documents before asking questions.")
     result = pipeline.ask(req.query, top_k=req.top_k)
     return JSONResponse(content=result)
 
@@ -70,7 +70,7 @@ async def api_ask(req: QueryRequest):
 async def api_evaluate():
     pipeline = get_pipeline()
     if pipeline.vector_store.count() == 0:
-        raise HTTPException(status_code=409, detail="ChromaDB is empty. Run `python run.py ingest` first.")
+        raise HTTPException(status_code=409, detail="The search index is empty. Ingest the source documents before evaluating.")
     eval_path = PROJECT_ROOT / "data" / "eval_dataset.json"
     if not os.path.exists(eval_path):
         raise HTTPException(status_code=404, detail="Evaluation dataset not found")
@@ -85,10 +85,10 @@ async def api_evaluate():
 async def api_stats():
     pipeline = get_pipeline()
     count = pipeline.vector_store.count()
-    stored = pipeline.vector_store.collection.get(include=["metadatas"])
+    metadatas = pipeline.vector_store.get_metadatas()
     pages = {
         metadata.get("page", "")
-        for metadata in (stored.get("metadatas") or [])
+        for metadata in metadatas
         if metadata.get("page")
         and metadata.get("source") == "Agni_Ki_Udaan_Adhyayan_Sahayika_Hindi.pdf"
     }
@@ -96,7 +96,7 @@ async def api_stats():
         "document_name": "Agni Ki Udaan — Hindi Study Reference",
         "pages_processed": len(pages),
         "language": "Hindi / Devanagari",
-        "vector_db": "ChromaDB (Persistent)",
+        "vector_db": "Read-only in-memory index" if pipeline.read_only else "ChromaDB (Persistent)",
         "vectors_stored": count,
         "embedding_model": pipeline.embedding_model_name,
         "chunk_size": pipeline.chunk_size,
@@ -110,10 +110,17 @@ async def api_stats():
 @app.post("/api/ingest")
 async def api_ingest():
     pipeline = get_pipeline()
+    if pipeline.read_only:
+        raise HTTPException(
+            status_code=405,
+            detail="The Vercel index is read-only. Update tracked files in data/raw and redeploy to change documents.",
+        )
     try:
         stats = pipeline.ingest_directory("data/raw")
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=405, detail=str(exc)) from exc
     return JSONResponse(content=stats)

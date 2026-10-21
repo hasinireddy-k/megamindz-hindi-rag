@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from src.normalizer import normalize_text, detect_language
 from src.chunker import MultilingualChunker
 from src.embeddings import DEFAULT_MODEL, MultilingualEmbeddingFunction
-from src.vector_store import ChromaVectorStore
+from src.vector_store import ChromaVectorStore, ReadOnlyVectorStore
 from src.retriever import TransparentRetriever
 from src.generator import GroundedGenerator
 
@@ -53,11 +53,19 @@ class IndicRagPipeline:
 
         # Initialize shared components once
         self.embedding_fn = MultilingualEmbeddingFunction(model_name=self.embedding_model_name)
-        self.vector_store = ChromaVectorStore(
-            persist_dir=self.persist_dir,
-            collection_name=self.collection_name,
-            embedding_fn=self.embedding_fn
-        )
+        self.read_only = os.getenv("VERCEL") == "1" or bool(os.getenv("VERCEL_ENV"))
+        if self.read_only:
+            self.vector_store = ReadOnlyVectorStore(
+                project_root=str(PROJECT_ROOT),
+                collection_name=self.collection_name,
+                embedding_fn=self.embedding_fn,
+            )
+        else:
+            self.vector_store = ChromaVectorStore(
+                persist_dir=self.persist_dir,
+                collection_name=self.collection_name,
+                embedding_fn=self.embedding_fn
+            )
         self.chunker = MultilingualChunker(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap
@@ -80,7 +88,7 @@ class IndicRagPipeline:
         except ImportError as exc:
             raise ImportError(
                 "PyMuPDF is required for PDF ingestion. Install project dependencies with "
-                "`python -m pip install -r requirements.txt`."
+                "`python -m pip install -r requirements-local.txt`."
             ) from exc
 
         pdf_candidate = Path(pdf_path)
@@ -135,6 +143,9 @@ class IndicRagPipeline:
         Unified ingestion: Ingests primary PDF document using PyMuPDF and any supplemental text files.
         Resets and populates persistent ChromaDB collection.
         """
+        if self.read_only:
+            raise RuntimeError("Ingestion is disabled on Vercel. Update data/raw and redeploy the project.")
+
         all_chunks: List[Dict[str, Any]] = []
         docs_loaded = 0
         total_pages = 0
